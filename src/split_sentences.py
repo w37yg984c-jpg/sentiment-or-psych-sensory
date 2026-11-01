@@ -6,29 +6,22 @@ SRC = "data/raw/book.txt"
 with open(SRC, encoding="utf-8") as f:
     text = f.read()
 
-# 去 HTML 标签
 text = re.sub(r"<[^>]+>", "", text)
-
-# 统一引号、去多余空白
-text = text.replace("“", "").replace("”", "").replace("‘", "").replace("’", "")
 text = re.sub(r"\s+", " ", text)
 
-# 按中文句末标点切句
 sentences = re.split(r"(?<=[。！？])", text)
 
 def clean(s):
-    s = s.strip().strip('"').strip("'").strip()
-    # 去掉句首尾的非中文/非字母数字符号
-    s = re.sub(r'^[^\u4e00-\u9fffA-Za-z0-9]+', '', s)
-    s = re.sub(r'[^\u4e00-\u9fffA-Za-z0-9。！？]+$', '', s)
+    s = s.strip()
+    if not re.search(r"[\u4e00-\u9fff]", s):
+        return ""
+    s = re.sub(r'^[”’"\'、，。；：]+', '', s)
+    s = re.sub(r'[“‘"\'、，；：]+$', '', s)
     return s.strip()
 
 sentences = [clean(s) for s in sentences]
-# 至少含一个中文字，长度 8–60
-sentences = [s for s in sentences
-             if 8 <= len(s) <= 60 and re.search(r"[\u4e00-\u9fff]", s)]
+sentences = [s for s in sentences if 8 <= len(s) <= 60]
 
-# 去重
 seen, uniq = set(), []
 for s in sentences:
     if s not in seen:
