@@ -1,0 +1,29 @@
+{
+  "count_char": {
+    "accuracy": 0.8298,
+    "cm": [
+      [
+        33,
+        8
+      ],
+      [
+        8,
+        45
+      ]
+    ]
+  },
+  "tfidf_char": {
+    "accuracy": 0.8298,
+    "cm": [
+      [
+        32,
+        9
+      ],
+      [
+        7,
+        46
+      ]
+    ]
+  },
+  "note": "Count vs TF-IDF, char 1-3 gram, class_weight=balanced"
+}
