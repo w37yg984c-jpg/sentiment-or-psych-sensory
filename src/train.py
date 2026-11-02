@@ -8,11 +8,11 @@ from sklearn.metrics import (accuracy_score, confusion_matrix,
 train = pd.read_csv("data/train_split.csv")
 test = pd.read_csv("data/test_split.csv")
 
-vec = TfidfVectorizer(max_features=2000, ngram_range=(1, 2))
+vec = TfidfVectorizer(analyzer="char", ngram_range=(1, 3), max_features=5000)
 Xtr = vec.fit_transform(train["text"])
 Xte = vec.transform(test["text"])
 
-clf = LogisticRegression(max_iter=1000).fit(Xtr, train["label"])
+clf = LogisticRegression(max_iter=1000, class_weight="balanced").fit(Xtr, train["label"])
 pred = clf.predict(Xte)
 proba = clf.predict_proba(Xte)[:, 1]
 
