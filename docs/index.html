@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>Sensory vs Psychological — Predictions</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { font-size: 1.4rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; font-size: 0.9rem; }
+  th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; vertical-align: top; }
+  th { background: #f4f4f4; }
+  .psych { color: #b00; }
+  .sens { color: #06c; }
+  select { margin: 0.5rem 0; padding: 4px; }
+</style>
+</head>
+<body>
+<h1>感官 vs 心理描写：模型预测</h1>
+<p>选择数据集查看预测结果（心理 = 1，感官 = 0）。</p>
+<select id="file">
+  <option value="test_predictions.csv">测试集预测</option>
+  <option value="analysis_predictions.csv">分析文本（琼瑶）预测</option>
+</select>
+<table id="tbl"><thead></thead><tbody></tbody></table>
+
+<script>
+function parseCSV(text) {
+  const rows = []; let cur = [], field = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"' && text[i+1] === '"') { field += '"'; i++; }
+      else if (c === '"') inQ = false;
+      else field += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === ',') { cur.push(field); field = ''; }
+      else if (c === '\n') { cur.push(field); rows.push(cur); cur = []; field = ''; }
+      else if (c !== '\r') field += c;
+    }
+  }
+  if (field || cur.length) { cur.push(field); rows.push(cur); }
+  return rows.filter(r => r.length > 1);
+}
+
+async function load(file) {
+  const res = await fetch(file);
+  const rows = parseCSV(await res.text());
+  const head = rows[0];
+  const body = rows.slice(1);
+  const thead = document.querySelector('#tbl thead');
+  const tbody = document.querySelector('#tbl tbody');
+  thead.innerHTML = '<tr>' + head.map(h => `<th>${h}</th>`).join('') + '</tr>';
+  tbody.innerHTML = body.map(r => '<tr>' + r.map((c, i) => {
+    let cls = '';
+    const h = head[i].toLowerCase();
+    if (h === 'pred' || h === 'true') cls = (c.trim() === '1') ? 'psych' : 'sens';
+    return `<td class="${cls}">${c}</td>`;
+  }).join('') + '</tr>').join('');
+}
+
+document.querySelector('#file').addEventListener('change', e => load(e.target.value));
+load('test_predictions.csv');
+</script>
+</body>
+</html>
